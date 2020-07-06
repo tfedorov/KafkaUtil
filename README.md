@@ -1,0 +1,2 @@
+# KafkaUtil
+Scala wrapper
