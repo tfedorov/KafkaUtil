@@ -1,20 +1,18 @@
-package com.tfedorov.producer
+package com.tfedorov.props
 
 import java.util.Properties
 
-import org.apache.kafka.clients.producer.KafkaProducer
+object PropertiesCreator {
 
-import scala.concurrent.ExecutionContextExecutor
-
-object ProducerInit {
-  def createPWrapper()(implicit ec: ExecutionContextExecutor): ProducerWrapper[String, String] = {
+  def create(): Properties = {
     val props = new Properties()
     props.put("bootstrap.servers", "localhost:9092")
     //props.put("bootstrap.servers", "localhost:29092")
+    props.put("group.id", "Idea")
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
     props.put("value.serializer", "org.apache.kafka.common.serialization.StringSerializer")
-    val producer = new KafkaProducer[String, String](props)
-    new ProducerWrapper(producer)
+    props.put("key.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+    props.put("value.deserializer", "org.apache.kafka.common.serialization.StringDeserializer")
+    props
   }
-
 }
