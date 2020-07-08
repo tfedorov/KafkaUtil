@@ -1,4 +1,4 @@
-package com.tfedorov
+package com.tfedorov.producer
 
 import java.util.concurrent.Future
 
