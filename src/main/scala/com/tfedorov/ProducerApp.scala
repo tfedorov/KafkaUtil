@@ -1,12 +1,13 @@
 package com.tfedorov
 
 import com.tfedorov.message.MessageGenerator
-import com.tfedorov.producer.{RecordMetadataPrinter, ProducerWrapper}
+import com.tfedorov.producer.{ProducerWrapper, RecordMetadataPrinter}
 import org.apache.kafka.clients.producer.RecordMetadata
 
 import scala.concurrent.{ExecutionContext, ExecutionContextExecutor, Future}
 
-object ProducerApp extends App {
+object ProducerApp extends App with Logging {
+
   implicit val ec: ExecutionContextExecutor = ExecutionContext.global
 
   private def shotMessage(producerWrapper: ProducerWrapper[String, String]): Future[RecordMetadata] = {
@@ -19,7 +20,7 @@ object ProducerApp extends App {
     producerWrapper.sendSync(message.key, message.value)
   }
 
-
+  info("*** STARTED ****")
   private val producerWrapper: ProducerWrapper[String, String] = ProducerWrapper.default("topic4test")
 
   val resultsSync: Seq[RecordMetadata] = (1 to 100).map(_ => shotMessageSync(producerWrapper))
@@ -33,4 +34,5 @@ object ProducerApp extends App {
   //futureRes.filter(!_.isCompleted).foreach(Printer.printRecordMetadata)
 
   producerWrapper.close()
+  info("*** ENDED ****")
 }
