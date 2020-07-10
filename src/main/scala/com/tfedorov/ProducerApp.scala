@@ -1,5 +1,6 @@
 package com.tfedorov
 
+
 import com.tfedorov.message.MessageGenerator
 import com.tfedorov.producer.{ProducerWrapper, RecordMetadataPrinter}
 import org.apache.kafka.clients.producer.RecordMetadata

@@ -2,12 +2,12 @@ package com.tfedorov.consumer
 
 import org.apache.kafka.clients.consumer.ConsumerRecords
 
-trait RecordProcessor[K, V] {
+trait RecordsProcessor[K, V] {
 
   def process(records: ConsumerRecords[K, V]): Unit
 }
 
-class ConsoleRecordProcessor extends RecordProcessor[String, String] {
+class ConsoleRecordsProcessor extends RecordsProcessor[String, String] {
 
   override def process(records: ConsumerRecords[String, String]): Unit = records.forEach(println)
 

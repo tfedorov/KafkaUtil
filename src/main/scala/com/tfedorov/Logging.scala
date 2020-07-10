@@ -7,5 +7,7 @@ trait Logging {
 
   protected def info(text: String): Unit = logger.info(text)
 
+  protected def error(e: Throwable): Unit = logger.info(e.getMessage)
+
 }
 

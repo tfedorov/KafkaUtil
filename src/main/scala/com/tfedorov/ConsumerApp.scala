@@ -1,16 +1,15 @@
 package com.tfedorov
 
-import com.tfedorov.consumer.{ConsoleRecordProcessor, ConsumerWrapper}
-
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
+import com.tfedorov.consumer.{ConsoleRecordsProcessor, ConsumerWrapper}
 
 object ConsumerApp extends App with Logging {
 
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   info("*** STARTED ****")
-  private val consumerWrapper = ConsumerWrapper.default("topic4test")
 
-  consumerWrapper.infiniteListen(new ConsoleRecordProcessor())
+  private val topic4testProducer = ConsumerWrapper.default("topic4test")
+  private val recordsProcessor = new ConsoleRecordsProcessor()
+
+  info("*** infinite loop ****")
   while (true)
-    Thread.sleep(5000)
+    topic4testProducer.syncPoll(recordsProcessor)
 }
