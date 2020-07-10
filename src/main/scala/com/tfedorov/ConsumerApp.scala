@@ -11,5 +11,5 @@ object ConsumerApp extends App with Logging {
 
   info("*** infinite loop ****")
   while (true)
-    topic4testProducer.syncPoll(recordsProcessor)
+    topic4testProducer.asyncPoll(recordsProcessor)
 }
