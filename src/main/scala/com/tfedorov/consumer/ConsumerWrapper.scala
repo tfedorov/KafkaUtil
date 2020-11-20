@@ -5,7 +5,7 @@ import java.util
 
 import com.tfedorov.Logging
 import com.tfedorov.consumer.ConsumerWrapper.PrintErrorCallBack
-import com.tfedorov.props.PropertiesCreator
+import com.tfedorov.props.PropertiesUtils
 import org.apache.kafka.clients.consumer.{ConsumerRecords, KafkaConsumer, OffsetAndMetadata, OffsetCommitCallback}
 import org.apache.kafka.common.TopicPartition
 
@@ -47,7 +47,7 @@ case class ConsumerWrapper[K, V](consumer: KafkaConsumer[K, V], topic: String) e
 object ConsumerWrapper extends Logging {
 
   def default(topic: String): ConsumerWrapper[String, String] = {
-    val consumer = new KafkaConsumer[String, String](PropertiesCreator.create())
+    val consumer = new KafkaConsumer[String, String](PropertiesUtils.defaultProps())
     consumer.subscribe((topic :: Nil).asJava)
     new ConsumerWrapper[String, String](consumer, topic)
   }
