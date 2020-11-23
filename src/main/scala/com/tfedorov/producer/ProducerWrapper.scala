@@ -4,12 +4,11 @@ package com.tfedorov.producer
 import java.util.Properties
 
 import com.tfedorov.producer.ProducerWrapper.PromisedCallback
-
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 
-import scala.concurrent.{ExecutionContextExecutor, Future, Promise}
+import scala.concurrent.{Future, Promise}
 
-class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String)(implicit ec: ExecutionContextExecutor) {
+class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String) {
 
   def sendFireAndForget(key: K, value: V): Unit = {
     val record: ProducerRecord[K, V] = new ProducerRecord[K, V](topic, key, value)
@@ -33,11 +32,10 @@ class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String)(implic
 
 object ProducerWrapper {
 
-  def create(topic: String, properties: Properties)(implicit ec: ExecutionContextExecutor): ProducerWrapper[String, String] = {
+  def create(topic: String, properties: Properties): ProducerWrapper[String, String] = {
     val producer = new KafkaProducer[String, String](properties)
     new ProducerWrapper(producer, topic)
   }
-
 
   private class PromisedCallback(promise: Promise[RecordMetadata]) extends Callback {
     override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {

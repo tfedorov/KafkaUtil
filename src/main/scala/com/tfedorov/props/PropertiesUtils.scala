@@ -6,7 +6,7 @@ object PropertiesUtils {
 
   def defaultProps(): Properties = {
     val props = new Properties()
-    //props.put("bootstrap.servers", "localhost:9092")
+    props.put("bootstrap.servers", "localhost:9094")
     //props.put("bootstrap.servers", "localhost:29092")
     props.put("group.id", "Idea-Macc")
     props.put("producer.auto.create.topics", "auto")

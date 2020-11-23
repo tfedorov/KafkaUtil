@@ -1,15 +1,24 @@
 package com.tfedorov
 
-import com.tfedorov.consumer.{ConsoleRecordsProcessor, ConsumerWrapper}
+import java.util.Properties
+
+import com.tfedorov.consumer.ConsumerWrapper
+import com.tfedorov.props.PropertiesUtils.{defaultProps, _}
 
 object ConsumerApp extends App with Logging {
 
-  info("*** STARTED ****")
+  info(s"*** STARTED ${this.getClass.getName}****")
 
-  private val topic4testProducer = ConsumerWrapper.default("topic4test")
-  private val recordsProcessor = new ConsoleRecordsProcessor()
+  private val bootstrap = "127.0.0.1:9094"
+  private val props: Properties = defaultProps() + ("bootstrap.servers", bootstrap)
+  private val topic = "my-topic"
+
+  info(s"***bootstrap = $bootstrap, topic = '$topic'****")
+  private val producer = ConsumerWrapper.create(topic, props)
 
   info("*** infinite loop ****")
+  //while (true)
+  //  producer.asyncPoll { (key, value) => println(s"key=$key, value=$value") }
   while (true)
-    topic4testProducer.asyncPoll(recordsProcessor)
+    producer.asyncPoll(producer.createPrintF)
 }

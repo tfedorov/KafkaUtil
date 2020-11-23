@@ -1,6 +1,5 @@
 package com.tfedorov
 
-
 import java.util.Properties
 
 import com.tfedorov.message.MessageGenerator
@@ -8,14 +7,12 @@ import com.tfedorov.producer.{ProducerWrapper, RecordMetadataPrinter}
 import com.tfedorov.props.PropertiesUtils.{defaultProps, _}
 import org.apache.kafka.clients.producer.RecordMetadata
 
-import scala.concurrent.{ExecutionContext, ExecutionContextExecutor}
-
 object ProducerApp extends App with Logging {
 
   info(s"*** STARTED ${this.getClass.getName}****")
+
   private val bootstrap = "127.0.0.1:9094"
   implicit val props: Properties = defaultProps() + ("bootstrap.servers", bootstrap)
-  implicit val ec: ExecutionContextExecutor = ExecutionContext.global
   private val topic = "my-topic"
   info(s"***bootstrap = $bootstrap, topic = '$topic'****")
   private val prod = ProducerWrapper.create(topic, props)
