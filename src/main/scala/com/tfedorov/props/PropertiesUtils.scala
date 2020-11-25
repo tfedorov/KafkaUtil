@@ -2,12 +2,15 @@ package com.tfedorov.props
 
 import java.util.Properties
 
+import scala.collection.JavaConverters._
+import scala.util.Properties.envOrElse
+
 object PropertiesUtils {
 
   def defaultProps(): Properties = {
     val props = new Properties()
-    props.put("bootstrap.servers", "localhost:9094")
-    //props.put("bootstrap.servers", "localhost:29092")
+    val bootstrapUrl = envOrElse("BOOTSTRAP_SERVERS", "localhost:9094")
+    props.put("bootstrap.servers", bootstrapUrl)
     props.put("group.id", "Idea-Macc")
     props.put("producer.auto.create.topics", "auto")
     props.put("key.serializer", "org.apache.kafka.common.serialization.StringSerializer")
@@ -19,8 +22,8 @@ object PropertiesUtils {
 
   case class PropertiesWrapper(properties: Properties) {
     implicit def +(key: String, value: String): Properties = {
-      val newProps = new Properties()
-      newProps.putAll(properties)
+      val newProps: Properties = new Properties()
+      properties.asScala.foreach { case (key: String, value: String) => newProps.put(key, value) }
       newProps.put(key, value)
       newProps
     }

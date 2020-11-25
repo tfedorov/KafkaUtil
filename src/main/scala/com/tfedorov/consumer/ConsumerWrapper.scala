@@ -39,7 +39,7 @@ case class ConsumerWrapper[K, V](consumer: KafkaConsumer[K, V], topic: String) e
     def applyRecordF(recordF: (K, V) => Unit): Unit = recordF(consRecord.key(), consRecord.value())
   }
 
-  def createPrintF: (K, V) => Unit = (key: K, value: V) => println(s"key=$key, value=$value")
+  def simplePrintF: (K, V) => Unit = (key: K, value: V) => println(s"key=$key, value=$value")
 }
 
 object ConsumerWrapper extends Logging {
