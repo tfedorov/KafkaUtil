@@ -10,14 +10,14 @@ import scala.util.Properties.envOrElse
 
 object ProducerApp extends App with Logging {
 
-  info(s"*** STARTED ${this.getClass.getName}****")
+  info(s"*** STARTED ${this.getClass.getName}.****")
 
   private val props: Properties = defaultProps()
   private val topic = envOrElse("KAFKA_TOPIC", "my-topic")
 
   info(s"***bootstrap = ${props.getProperty("bootstrap.servers")}, topic = '$topic'****")
   private val prod = ProducerWrapper.create(topic, props)
-
+  info(s"*** start sending messages ****")
   (1 to 100).map(_ => simpleMessage())
 
   private def simpleMessage(): Unit = {

@@ -9,7 +9,7 @@ object PropertiesUtils {
 
   def defaultProps(): Properties = {
     val props = new Properties()
-    val bootstrapUrl = envOrElse("BOOTSTRAP_SERVERS", "localhost:9094")
+    val bootstrapUrl = envOrElse("BOOTSTRAP_SERVERS", "127.0.0.1:9097")
     props.put("bootstrap.servers", bootstrapUrl)
     props.put("group.id", "Idea-Macc")
     props.put("producer.auto.create.topics", "auto")
