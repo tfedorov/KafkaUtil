@@ -14,15 +14,16 @@ object ProducerApp extends App with Logging {
 
   private val props: Properties = defaultProps()
   private val topic = envOrElse("KAFKA_TOPIC", "my-topic")
+  private val server = props.getProperty("bootstrap.servers")
 
-  info(s"***bootstrap = ${props.getProperty("bootstrap.servers")}, topic = '$topic'****")
-  private val prod = ProducerWrapper.create(topic, props)
+  info(s"***bootstrap = $server, topic = '$topic'****")
+  private val producer = ProducerWrapper.create(topic, props)
   info(s"*** start sending messages ****")
   (1 to 100).map(_ => simpleMessage())
 
   private def simpleMessage(): Unit = {
     val message = MessageGenerator.generateConsistent()
-    val response = prod.sendSync(message.key, message.value)
+    val response = producer.sendSync(message.key, message.value)
     RecordMetadataPrinter.printConsole(response)
   }
 
@@ -36,6 +37,6 @@ object ProducerApp extends App with Logging {
   //futureRes.filter(!_.isCompleted).foreach(Printer.printRecordMetadata)
 
 
-  prod.close()
+  producer.close()
   info("*** ENDED ****")
 }
