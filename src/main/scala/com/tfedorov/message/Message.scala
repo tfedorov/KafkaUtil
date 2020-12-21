@@ -7,5 +7,6 @@ case class Message[K, V](key: K, value: V) {
 }
 
 object Message {
-  def strings: Message[String, String] = Message("", "")
+
+  def empty: Message[String, String] = Message("", "")
 }

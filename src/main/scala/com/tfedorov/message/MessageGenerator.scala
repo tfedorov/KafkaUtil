@@ -8,7 +8,6 @@ import scala.util.Random
 
 object MessageGenerator {
 
-
   private def randomChar() = Random.nextPrintableChar
 
   private def random3Char(): String = randomChar().toString + randomChar() + randomChar()
@@ -24,5 +23,10 @@ object MessageGenerator {
 
   def generateRandom(): Message[String, String] = {
     Message(random3Char(), s"${random3Char()}-value-${nowFormatted()}")
+  }
+
+  def generatePayment(): Message[String, Payment] = {
+    val id = count.toString
+    Message(id, new Payment(id, Random.nextDouble()))
   }
 }

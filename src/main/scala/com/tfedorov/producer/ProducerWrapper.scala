@@ -32,8 +32,10 @@ class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String) {
 
 object ProducerWrapper {
 
-  def create(topic: String, properties: Properties): ProducerWrapper[String, String] = {
-    val producer = new KafkaProducer[String, String](properties)
+  def create(topic: String, properties: Properties): ProducerWrapper[String, String] = createTyped(topic, properties)
+
+  def createTyped[V](topic: String, properties: Properties): ProducerWrapper[String, V] = {
+    val producer = new KafkaProducer[String, V](properties)
     new ProducerWrapper(producer, topic)
   }
 
