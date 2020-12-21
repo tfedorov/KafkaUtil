@@ -18,17 +18,17 @@ object ConsumerApp extends App with Logging {
   props.put(ConsumerConfig.KEY_DESERIALIZER_CLASS_CONFIG, classOf[StringDeserializer])
   props.put(ConsumerConfig.VALUE_DESERIALIZER_CLASS_CONFIG, classOf[KafkaAvroDeserializer])
   props.put(KafkaAvroDeserializerConfig.SPECIFIC_AVRO_READER_CONFIG, "true")
-  private val topic = envOrElse("KAFKA_TOPIC", "myTopicSchema")
+  private val topic = envOrElse("KAFKA_TOPIC", "my-topic")
 
   info(s"***bootstrap = ${props.getProperty("bootstrap.servers")}, topic = '$topic'****")
-  private val consumer = ConsumerWrapper.createFromMessage(topic, props, Payment.empty)
+  private val consumer: ConsumerWrapper[String, Payment] = ConsumerWrapper.create(topic, props)
 
-  consumer.readFromBeginning(_.simplePrintF)
+  consumer.readFromBeginning(Message.simplePrintF[Payment])
 
   info("*** infinite loop ****")
   // consumer.autoCommitPoll(_.simplePrintF)
   //while (true)
   //  consume.asyncPoll { (key, value) => println(s"key=$key, value=$value") }
   while (true)
-    consumer.asyncPoll(_.simplePrintF)
+    consumer.asyncPoll(Message.simplePrintF[Payment])
 }

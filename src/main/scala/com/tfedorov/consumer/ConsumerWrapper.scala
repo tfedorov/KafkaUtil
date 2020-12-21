@@ -1,71 +1,68 @@
 package com.tfedorov.consumer
 
-import java.time.Duration
-import java.util
-import java.util.Properties
 import com.tfedorov.Logging
-import com.tfedorov.consumer.ConsumerWrapper.PrintErrorCallBack
 import com.tfedorov.message.Message
 import org.apache.kafka.clients.consumer._
 import org.apache.kafka.common.TopicPartition
 
+import java.time.Duration
+import java.util
+import java.util.Properties
 import scala.collection.JavaConverters._
 
-case class ConsumerWrapper[K, V](consumer: KafkaConsumer[K, V], topic: String, emptyMessage: Message[K, V]) extends Logging {
+case class ConsumerWrapper[K, V](consumer: KafkaConsumer[K, V], topic: String) extends Logging {
 
   private final val DEF_DURATION: Duration = Duration.ofMillis(1000)
 
   def readFromBeginning(recordF: (K, V) => Unit): Unit = {
     consumer.seekToBeginning(consumer.assignment())
-    val polledRecords1: ConsumerRecords[K, V] = consumer.poll(Duration.ofMillis(10000))
-    polledRecords1.iterator().asScala.foreach(r => recordF(r.key(), r.value()))
+    messageIterator().foreach(c => recordF(c.key(), c.value()))
 
     consumer.seekToBeginning(consumer.assignment())
-    val polledRecords2: ConsumerRecords[K, V] = consumer.poll(Duration.ofMillis(10000))
-    polledRecords2.iterator().asScala.foreach(r => recordF(r.key(), r.value()))
-  }
-
-  def readFromBeginning(f: Message[K, V] => (K, V) => Unit): Unit = {
-    readFromBeginning(f(emptyMessage))
+    messageIterator().foreach(c => recordF(c.key(), c.value()))
   }
 
   def autoCommitPoll(recordF: (K, V) => Unit): Unit = {
-    val polledRecords: ConsumerRecords[K, V] = consumer.poll(DEF_DURATION)
-    polledRecords.iterator().asScala.foreach(r => recordF(r.key(), r.value()))
+    messageIterator().foreach(c => recordF(c.key(), c.value()))
   }
 
-  def autoCommitPoll(f: Message[K, V] => (K, V) => Unit): Unit = {
-    autoCommitPoll(f(emptyMessage))
-  }
-
-  def asyncPoll(recordF: (K, V) => Unit): Unit = {
-
-    autoCommitPoll(recordF)
+  def syncPoll(recordF: (K, V) => Unit): Unit = {
     try {
-      consumer.commitAsync(new PrintErrorCallBack())
+      messageIterator().foreach(c => recordF(c.key(), c.value()))
+      consumer.commitSync()
     }
     catch {
       case e: Throwable => error(e)
     }
   }
 
-  def asyncPoll(f: Message[K, V] => (K, V) => Unit): Unit = {
-    asyncPoll(f(emptyMessage))
+  def asyncPoll(recordF: (K, V) => Unit): Unit = {
+    try {
+      messageIterator().foreach(c => recordF(c.key(), c.value()))
+      consumer.commitAsync(new OffsetCommitCallback() {
+        override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit =
+          if (exception != null)
+            error(exception)
+      })
+    }
+    catch {
+      case e: Throwable => error(e)
+    }
+  }
+
+
+  private def messageIterator(): Iterator[ConsumerRecord[K, V]] = {
+    val polledRecords: ConsumerRecords[K, V] = consumer.poll(DEF_DURATION)
+    polledRecords.iterator().asScala
   }
 }
 
 object ConsumerWrapper extends Logging {
 
-  def createFromMessage[K, V, M <: Message[K, V]](topic: String, properties: Properties, emptyMessage: Message[K, V]): ConsumerWrapper[K, V] = {
+  def create[K, V, M <: Message[K, V]](topic: String, properties: Properties): ConsumerWrapper[K, V] = {
     val consumer = new KafkaConsumer[K, V](properties)
     consumer.subscribe((topic :: Nil).asJava)
-    new ConsumerWrapper[K, V](consumer, topic, emptyMessage)
-  }
-
-  private class PrintErrorCallBack extends OffsetCommitCallback {
-    override def onComplete(offsets: util.Map[TopicPartition, OffsetAndMetadata], exception: Exception): Unit =
-      if (exception != null)
-        error(exception)
+    new ConsumerWrapper[K, V](consumer, topic)
   }
 
 }

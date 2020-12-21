@@ -51,4 +51,6 @@ object Payment {
         |}""".stripMargin)
 
   def empty: Message[String, Payment] = Message("", new Payment("", 0f))
+
+
 }

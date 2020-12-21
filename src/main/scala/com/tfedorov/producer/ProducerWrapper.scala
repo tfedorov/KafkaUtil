@@ -1,9 +1,9 @@
 package com.tfedorov.producer
 
 
-import java.util.Properties
+import com.tfedorov.message.{Message, Payment}
 
-import com.tfedorov.producer.ProducerWrapper.PromisedCallback
+import java.util.Properties
 import org.apache.kafka.clients.producer.{Callback, KafkaProducer, ProducerRecord, RecordMetadata}
 
 import scala.concurrent.{Future, Promise}
@@ -15,8 +15,8 @@ class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String) {
     producer.send(record)
   }
 
-  def sendSync(key: K, value: V): RecordMetadata = {
-    val record: ProducerRecord[K, V] = new ProducerRecord[K, V](topic, key, value)
+  def sendSync(message: Message[K, V]): RecordMetadata = {
+    val record: ProducerRecord[K, V] = new ProducerRecord[K, V](topic, message.key, message.value)
     producer.send(record).get()
   }
 
@@ -32,20 +32,19 @@ class ProducerWrapper[K, V](producer: KafkaProducer[K, V], topic: String) {
 
 object ProducerWrapper {
 
-  def create(topic: String, properties: Properties): ProducerWrapper[String, String] = createTyped(topic, properties)
-
-  def createTyped[V](topic: String, properties: Properties): ProducerWrapper[String, V] = {
-    val producer = new KafkaProducer[String, V](properties)
+  def create[V](topic: String, properties: Properties): ProducerWrapper[String, V] = {
+    val producer: KafkaProducer[String, V] = new KafkaProducer[String, V](properties)
     new ProducerWrapper(producer, topic)
   }
+}
 
-  private class PromisedCallback(promise: Promise[RecordMetadata]) extends Callback {
-    override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
-      if (exception == null)
-        promise.success(metadata)
-      else
-        promise.failure(exception)
-    }
+private class PromisedCallback(promise: Promise[RecordMetadata]) extends Callback {
+  override def onCompletion(metadata: RecordMetadata, exception: Exception): Unit = {
+    if (exception == null)
+      promise.success(metadata)
+    else
+      promise.failure(exception)
   }
+
 
 }

@@ -1,10 +1,10 @@
 package com.tfedorov
 
-import com.tfedorov.message.{MessageGenerator, Payment}
+import com.tfedorov.message.{Message, MessageGenerator, Payment}
 import com.tfedorov.producer.{ProducerWrapper, RecordMetadataPrinter}
 import com.tfedorov.props.PropertiesUtils.dockerContainerDefProps
 import io.confluent.kafka.serializers.KafkaAvroSerializer
-import org.apache.kafka.clients.producer.ProducerConfig
+import org.apache.kafka.clients.producer.{ProducerConfig, RecordMetadata}
 import org.apache.kafka.common.serialization.StringSerializer
 
 import java.util.Properties
@@ -20,27 +20,17 @@ object ProducerApp extends App with Logging {
   props.put(ProducerConfig.KEY_SERIALIZER_CLASS_CONFIG, classOf[StringSerializer])
   props.put(ProducerConfig.VALUE_SERIALIZER_CLASS_CONFIG, classOf[KafkaAvroSerializer])
 
-
   info(s"***bootstrap = $server, topic = '$topic'****")
-  private val producer: ProducerWrapper[String, Payment] = ProducerWrapper.createTyped(topic, props)
+  private val producer: ProducerWrapper[String, Payment] = ProducerWrapper.create(topic, props)
   info(s"*** start sending messages ****")
   (1 to 100).map(_ => simpleMessage())
 
   private def simpleMessage(): Unit = {
-    val message = MessageGenerator.generatePayment()
-    val response = producer.sendSync(message.key, message.value)
+    import Message._implicit.str2Payment
+    val message: Message[String, Payment] = MessageGenerator.generateMessage[Payment]
+    val response: RecordMetadata = producer.sendSync(message)
     RecordMetadataPrinter.printConsole(response)
   }
-
-  /*  while (true) {
-      Thread.sleep(5000)
-      simpleMessage()
-    }*/
-
-  // val futureRes: immutable.Seq[Future[RecordMetadata]] = (1 to 100).map(_ => shotMessage(prod))
-  //futureRes.foreach { fr: Future[RecordMetadata] => fr.foreach(printRecordMetadata) }
-  //futureRes.filter(!_.isCompleted).foreach(Printer.printRecordMetadata)
-
 
   producer.close()
   info("*** ENDED ****")
